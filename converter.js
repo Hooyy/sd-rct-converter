@@ -2,32 +2,35 @@ const ShowdownConverter = {
     // Main conversion function that ties everything together
     convert: function (showdownFormat, trainerConfig) {
         try {
-            // First, parse the Showdown format into a list of Pokémon
+            // Parse the Showdown format into a list of Pokémon
             const pokemonList = this.parseShowdownFormat(showdownFormat);
 
-            // Create the complete output object that combines trainer settings with Pokémon data
             const output = {
-                // Use the provided trainer name or default to "Trainer"
+                // Trainer configuration
                 name: trainerConfig.name || "Trainer",
 
                 // Only include identity if it's not empty
                 ...(trainerConfig.identity && { identity: trainerConfig.identity }),
 
-                // AI configuration - determines how the trainer makes decisions
+                // AI configuration - includes multiple biases for decision-making
                 ai: {
                     type: "rct",
                     data: {
-                        maxSelectMargin: parseFloat(trainerConfig.aiMargin)
+                        maxSelectMargin: parseFloat(trainerConfig.maxSelectMargin) || 0,
+                        moveBias: parseFloat(trainerConfig.moveBias) || 0,
+                        statMoveBias: parseFloat(trainerConfig.statMoveBias) || 0,
+                        switchBias: parseFloat(trainerConfig.switchBias) || 0,
+                        itemBias: parseFloat(trainerConfig.itemBias) || 0
                     }
                 },
 
                 // Battle rules - controls item usage during battle
                 battleRules: {
-                    maxItemUses: parseInt(trainerConfig.maxItems)
+                    maxItemUses: parseInt(trainerConfig.maxItems) || 0
                 },
 
                 // Items the trainer can use during battle
-                bag: this.buildBag(trainerConfig.itemType), // Pass itemTypes (which now includes quantities)
+                bag: this.buildBag(trainerConfig.itemType),
 
                 // The team of Pokémon this trainer will use
                 team: pokemonList
@@ -38,34 +41,26 @@ const ShowdownConverter = {
                 output.battleFormat = trainerConfig.battleFormat;
             }
 
-            // Return the successful result
             return {
                 success: true,
                 result: JSON.stringify(output, null, 2)
             };
         } catch (error) {
-            // If anything goes wrong, return an error result
             return {
                 success: false,
                 error: error.message
             };
         }
-    }
-    ,
+    },
 
-    // Build the bag (items) array from the trainer config, reflecting item quantity
     buildBag: function (itemTypes) {
         const bag = [];
-
-        // Ensure itemTypes is an array
         if (!Array.isArray(itemTypes)) {
             throw new Error("Input must be an array of items.");
         }
 
         itemTypes.forEach(itemType => {
-            // Ensure each itemType is an object with 'item' and 'quantity'
-            if (itemType && itemType.item && typeof itemType.item === "string" && itemType.quantity && typeof itemType.quantity === "number") {
-                // Add the item as it is to the bag
+            if (itemType && itemType.item && typeof itemType.item === "string" && typeof itemType.quantity === "number") {
                 bag.push({
                     item: itemType.item,
                     quantity: itemType.quantity
@@ -76,23 +71,13 @@ const ShowdownConverter = {
         });
 
         return bag;
-    }
+    },
 
-
-
-
-    ,
-
-
-
-    // Split the input text into individual Pokémon entries
     parseShowdownFormat: function (text) {
         const entries = text.split('\n\n').filter(entry => entry.trim());
         return entries.map(entry => this.parseSinglePokemon(entry));
     },
 
-    // Parse a single Pokémon's text block into our required format
-    // Parse a single Pokémon's text block into our required format
     parseSinglePokemon: function (text) {
         const lines = text.split('\n').filter(line => line.trim());
         const pokemon = {
@@ -102,22 +87,8 @@ const ShowdownConverter = {
             nature: '',
             ability: '',
             moveset: [],
-            ivs: {
-                hp: 31,
-                atk: 31,
-                def: 31,
-                spa: 31,
-                spd: 31,
-                spe: 31
-            },
-            evs: {
-                hp: 0,
-                atk: 0,
-                def: 0,
-                spa: 0,
-                spd: 0,
-                spe: 0
-            },
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+            evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
         };
 
         let levelFound = false;
@@ -148,14 +119,13 @@ const ShowdownConverter = {
             } else if (line.trim().endsWith(' Nature')) {
                 pokemon.nature = line.split(' ')[0].toLowerCase();
             } else if (line.startsWith('Level: ')) {
-                pokemon.level = parseInt(line.substring(7).trim()); // Pega o número após "Level: "
+                pokemon.level = parseInt(line.substring(7).trim());
                 levelFound = true;
             } else if (line.startsWith('- ')) {
                 pokemon.moveset.push(line.substring(2).toLowerCase().replace(/ /g, ''));
             }
         });
 
-        // Se o nível não for encontrado, ele já está com o valor default de 50
         if (!levelFound) {
             pokemon.level = 50;
         }
@@ -167,7 +137,6 @@ const ShowdownConverter = {
         let processedName = name.toLowerCase().trim();
         const result = {};
 
-        // Handle gender parsing and cleanup (supports uppercase as well)
         if (processedName.match(/(\s\(\s?[m]\s?\)|-m)$/i)) {
             processedName = processedName.replace(/(\s\(\s?[m]\s?\)|-m)$/i, '');
             result.gender = "MALE";
@@ -180,7 +149,6 @@ const ShowdownConverter = {
 
         result.species = processedName;
 
-        // Handle regional forms (e.g., "alola", "galar", etc.)
         const regionalForms = {
             'alola': 'alolan',
             'galar': 'galarian',
@@ -197,11 +165,7 @@ const ShowdownConverter = {
         }
 
         return result;
-    }
-
-
-    ,
-
+    },
 
     parseEVs: function (evString, pokemon) {
         evString.split('/').forEach(ev => {

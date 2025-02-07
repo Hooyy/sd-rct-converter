@@ -1,13 +1,17 @@
 /* First, let's create a proper container for our main layout */
 .layout {
     display: grid;
-    grid-template-columns: 1fr 300px;  /* This gives us our two-column layout */
+    grid-template-columns: 1fr 2fr;
+    /* Input section takes 1/3, trainer config takes 2/3 */
     gap: 20px;
     margin-bottom: 20px;
+    min-height: 500px;
+    /* Ensures minimum height for both sections */
 }
 
 /* Now let's make both sections the same height */
-.input-section, .trainer-config {
+.input-section,
+.trainer-config {
     background-color: var(--card-bg);
     padding: 20px;
     border-radius: 5px;
@@ -21,15 +25,19 @@
 /* Style the textbox to fill available space */
 .input-section textarea {
     /* Remove the previous height setting */
-    flex: 1;  /* This makes the textarea fill available space */
-    min-height: 200px;  /* Ensure minimum height */
+    flex: 1;
+    /* This makes the textarea fill available space */
+    min-height: 200px;
+    /* Ensure minimum height */
     margin: 10px 0;
-    resize: vertical;  /* Allow vertical resizing only */
+    resize: vertical;
+    /* Allow vertical resizing only */
 }
 
 /* Ensure form groups are properly spaced */
 .form-group {
     margin-bottom: 15px;
+
     /* Last form group shouldn't have margin */
     &:last-child {
         margin-bottom: 0;

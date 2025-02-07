@@ -4,7 +4,7 @@ class App {
         this.themeManager = new ThemeManager();
         // Store selected items
         this.selectedItems = [];
-        // Initialize form handling
+        // Initialize form handlers
         this.initializeFormHandlers();
     }
 
@@ -14,9 +14,9 @@ class App {
             this.themeManager.toggleTheme(e.target.checked);
         });
 
-        // Preset selection handler
-        document.getElementById('preset')?.addEventListener('change', (e) => {
-            TrainerPresets.loadPreset(e.target.value);
+        // Config selector handler
+        document.getElementById('config-selector')?.addEventListener('change', (e) => {
+            this.toggleConfigSections(e.target.value);
         });
 
         // Convert button handler
@@ -24,9 +24,9 @@ class App {
             this.handleConversion();
         });
 
-        // AI margin warning handler
-        document.getElementById('ai-margin')?.addEventListener('input', (e) => {
-            this.updateAIWarning(e.target.value);
+        // Max Select Margin warning handler
+        document.getElementById('max-select-margin')?.addEventListener('input', (e) => {
+            this.updateMaxSelectMarginWarning(e.target.value);
         });
 
         // Item type selection handler
@@ -48,6 +48,24 @@ class App {
         document.getElementById('download-json-button')?.addEventListener('click', () => {
             this.downloadJSON();
         });
+
+        // Garantir que a seção correta seja exibida ao carregar a página
+        const initialSelection = document.getElementById('config-selector').value;
+        this.toggleConfigSections(initialSelection);
+    }
+
+    // Função para alternar entre as seções de configuração
+    toggleConfigSections(selectedValue) {
+        const aiSettings = document.getElementById('ai-settings');
+        const mainSettings = document.getElementById('main-settings');
+
+        if (selectedValue === 'ai') {
+            aiSettings.style.display = 'block';
+            mainSettings.style.display = 'none';
+        } else if (selectedValue === 'main') {
+            aiSettings.style.display = 'none';
+            mainSettings.style.display = 'block';
+        }
     }
 
     // Função para adicionar o item
@@ -217,28 +235,40 @@ class App {
 
     // Função para obter a configuração do treinador
     getTrainerConfig() {
+        // Capture the selected items and their quantities
         const selectedItems = this.selectedItems.map(item => ({
             item: item.item,
             quantity: item.quantity
         }));
 
+        // Get references to the form inputs
         const trainerNameInput = document.getElementById('trainer-name');
-        const aiMarginInput = document.getElementById('ai-margin');
+        const maxSelectMarginInput = document.getElementById('max-select-margin');
+        const moveBiasInput = document.getElementById('move-bias');
+        const statMoveBiasInput = document.getElementById('stat-move-bias');
+        const switchBiasInput = document.getElementById('switch-bias');
+        const itemBiasInput = document.getElementById('item-bias');
         const battleFormatInput = document.getElementById('battle-format');
         const maxItemsInput = document.getElementById('max-items');
         const itemQuantityInput = document.getElementById('item-quantity');
         const trainerIdentityInput = document.getElementById('trainer-identity');
 
+        // Return the trainer configuration object
         return {
             name: trainerNameInput ? trainerNameInput.value : '',
             identity: trainerIdentityInput ? trainerIdentityInput.value : '',
-            aiMargin: aiMarginInput ? aiMarginInput.value : '',
+            maxSelectMargin: maxSelectMarginInput ? parseFloat(maxSelectMarginInput.value) : '',
+            moveBias: moveBiasInput ? parseFloat(moveBiasInput.value) : '',
+            statMoveBias: statMoveBiasInput ? parseFloat(statMoveBiasInput.value) : '',
+            switchBias: switchBiasInput ? parseFloat(switchBiasInput.value) : '',
+            itemBias: itemBiasInput ? parseFloat(itemBiasInput.value) : '',
             battleFormat: battleFormatInput ? battleFormatInput.value : '',
-            maxItems: maxItemsInput ? maxItemsInput.value : '',
+            maxItems: maxItemsInput ? parseInt(maxItemsInput.value) : '',
             itemType: selectedItems,
-            itemQuantity: itemQuantityInput ? itemQuantityInput.value : ''
+            itemQuantity: itemQuantityInput ? parseInt(itemQuantityInput.value) : 0
         };
     }
+
 
 
     // Função para atualizar o aviso sobre o comportamento da IA

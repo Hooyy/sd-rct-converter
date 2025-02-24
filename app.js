@@ -4,8 +4,12 @@ class App {
         this.themeManager = new ThemeManager();
         // Store selected items
         this.selectedItems = [];
+        this.selectedRequiredDefeats = [];
+        this.selectedBiomeTagBlacklist = [];
+        this.selectedBiomeTagWhitelist = [];
         // Initialize form handlers
         this.initializeFormHandlers();
+
     }
 
     initializeFormHandlers() {
@@ -22,6 +26,11 @@ class App {
         // Convert button handler
         document.getElementById('convert-button')?.addEventListener('click', () => {
             this.handleConversion();
+        });
+
+        // Convert mob button handler
+        document.getElementById('convert-mob-button')?.addEventListener('click', () => {
+            this.handleMobConversion();
         });
 
         // Max Select Margin warning handler
@@ -51,20 +60,135 @@ class App {
 
         // Garantir que a seção correta seja exibida ao carregar a página
         const initialSelection = document.getElementById('config-selector').value;
-        this.toggleConfigSections(initialSelection);
+            this.toggleConfigSections(initialSelection);
+
+        // Required Defeats
+        document.getElementById('required-defeats-select')?.addEventListener('change', (e) => {
+            this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
+        });
+        document.getElementById('add-required-defeat')?.addEventListener('click', () => {
+            this.addItemToList('required-defeats-select', 'required-defeats-custom', 'required-defeats-list', this.selectedRequiredDefeats);
+        });
+
+        // Required Defeats
+                document.getElementById('required-defeats-select')?.addEventListener('change', (e) => {
+                    this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
+                });
+                document.getElementById('add-required-defeat')?.addEventListener('click', () => {
+                    this.addItemToList('required-defeats-select', 'required-defeats-custom', 'required-defeats-list', this.selectedRequiredDefeats);
+                });
+
+                // Biome Tag Blacklist
+                document.getElementById('biome-tag-blacklist-select')?.addEventListener('change', (e) => {
+                    this.toggleCustomInput(e.target.value, 'biome-tag-blacklist-custom-container');
+                });
+                document.getElementById('add-biome-tag-blacklist')?.addEventListener('click', () => {
+                    this.addItemToList('biome-tag-blacklist-select', 'biome-tag-blacklist-custom', 'biome-tag-blacklist-list', this.selectedBiomeTagBlacklist);
+                });
+
+                // Biome Tag Whitelist
+                document.getElementById('biome-tag-whitelist-select')?.addEventListener('change', (e) => {
+                    this.toggleCustomInput(e.target.value, 'biome-tag-whitelist-custom-container');
+                });
+                document.getElementById('add-biome-tag-whitelist')?.addEventListener('click', () => {
+                    this.addItemToList('biome-tag-whitelist-select', 'biome-tag-whitelist-custom', 'biome-tag-whitelist-list', this.selectedBiomeTagWhitelist);
+                });
+            }
+
+            toggleCustomInput(value, containerId) {
+                const customInputContainer = document.getElementById(containerId);
+                if (customInputContainer) {
+                    customInputContainer.style.display = value === 'other' ? 'block' : 'none';
+                }
     }
 
     // Função para alternar entre as seções de configuração
     toggleConfigSections(selectedValue) {
         const aiSettings = document.getElementById('ai-settings');
         const mainSettings = document.getElementById('main-settings');
+        const mobSettings = document.getElementById('mob-settings'); // Nova seção
 
         if (selectedValue === 'ai') {
             aiSettings.style.display = 'block';
             mainSettings.style.display = 'none';
+            mobSettings.style.display = 'none';
         } else if (selectedValue === 'main') {
             aiSettings.style.display = 'none';
             mainSettings.style.display = 'block';
+            mobSettings.style.display = 'none';
+        } else if (selectedValue === 'mob') {
+            aiSettings.style.display = 'none';
+            mainSettings.style.display = 'none';
+            mobSettings.style.display = 'block';
+        }
+    }
+
+    addItemToList(selectId, customInputId, listId, selectedItems) {
+        const select = document.getElementById(selectId);
+        const customInput = document.getElementById(customInputId);
+        const list = document.getElementById(listId);
+
+        if (select && list) {
+            const selectedValue = select.value === 'other' ? customInput.value.trim() : select.value;
+
+            if (selectedValue) {
+                selectedItems.push(selectedValue);
+                this.updateList(list, selectedItems);
+
+                // Limpa o input personalizado após adicionar
+                if (select.value === 'other') {
+                    customInput.value = '';
+                }
+            }
+        }
+    }
+
+    updateList(list, items) {
+        if (list) {
+            list.innerHTML = ''; // Limpa a lista
+            items.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.textContent = item;
+                list.appendChild(listItem);
+            });
+        }
+    }
+
+    handleMobConversion() {
+        try {
+            const mobConfig = this.getMobConfig();
+
+            // Verificar se o tipo do mob foi preenchido
+            if (!mobConfig.type) {
+                throw new Error('Mob type is required.');
+            }
+
+            // Converter as configurações do mob para JSON
+            const mobJson = JSON.stringify(mobConfig, null, 2);
+
+            // Exibir o resultado na área de saída
+            document.getElementById('output').textContent = mobJson;
+        } catch (error) {
+            document.getElementById('output').textContent = 'Error: ' + error.message;
+        }
+    }
+
+    handleMobConversion() {
+        try {
+            const mobConfig = this.getMobConfig();
+
+            // Verificar se o tipo do mob foi preenchido
+            if (!mobConfig.type) {
+                throw new Error('Mob type is required.');
+            }
+
+            // Converter as configurações do mob para JSON
+            const mobJson = JSON.stringify(mobConfig, null, 2);
+
+            // Exibir o resultado na área de saída
+            document.getElementById('output').textContent = mobJson;
+        } catch (error) {
+            document.getElementById('output').textContent = 'Error: ' + error.message;
         }
     }
 
@@ -196,42 +320,100 @@ class App {
         }
     }
 
-    // Função para baixar o JSON
+
+    // Função para baixar o JSON em uma estrutura de pastas ZIP
     downloadJSON() {
         try {
-            // Obtém o texto de entrada (input) e a configuração do treinador
             const input = document.getElementById('input')?.value;
             const trainerConfig = this.getTrainerConfig();
+            const mobConfig = this.getMobConfig();
 
-            // Verifica se o campo de entrada está vazio
+            // Verificar se o nome do treinador foi preenchido
+            if (!trainerConfig.name) {
+                throw new Error('Trainer name is required.');
+            }
+
             if (!input) {
                 throw new Error('Input text is empty.');
             }
 
-            // Chama a função de conversão passando a entrada e a configuração do treinador
             const result = ShowdownConverter.convert(input, trainerConfig);
 
-            // Verifica se a conversão foi bem-sucedida
             if (result.success) {
-                // O conteúdo do arquivo JSON será exatamente o resultado da conversão
-                const blob = new Blob([result.result], { type: 'application/json' });
+                const trainerName = trainerConfig.name.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
 
-                // Cria o link de download
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'trainer_profile.json'; // Nome do arquivo JSON
+                const zip = new JSZip();
 
-                // Dispara o download do arquivo
-                link.click();
+                // Pasta data/rctmod/trainers
+                const trainersFolder = zip.folder("data/rctmod/trainers");
+                trainersFolder.file(`${trainerName}.json`, result.result);
+
+                // Pasta data/rctmod/mobs/single
+                const mobsFolder = zip.folder("data/rctmod/mobs");
+                const singleFolder = mobsFolder.folder("single");
+                singleFolder.file(`${trainerName}.json`, JSON.stringify(mobConfig, null, 2));
+
+                // Gerar o arquivo ZIP
+                zip.generateAsync({ type: "blob" })
+                    .then((blob) => {
+                        saveAs(blob, `RCTrainer_${trainerName}.zip`);
+                    })
+                    .catch((error) => {
+                        console.error('Error generating ZIP:', error);
+                    });
             } else {
-                // Em caso de erro na conversão, exibe a mensagem de erro
                 console.error('Error in conversion:', result.error);
             }
         } catch (error) {
             console.error('Error generating JSON:', error.message);
+            alert(error.message); // Mostra uma mensagem de erro para o usuário
         }
     }
 
+    getMobConfig() {
+        return {
+            type: document.getElementById('mob-type').value || undefined,
+            requiredDefeats: this.selectedRequiredDefeats, // Usar a lista de requiredDefeats
+            maxTrainerWins: document.getElementById('max-trainer-wins').value
+                ? parseInt(document.getElementById('max-trainer-wins').value)
+                : undefined,
+            maxTrainerDefeats: document.getElementById('max-trainer-defeats').value
+                ? parseInt(document.getElementById('max-trainer-defeats').value)
+                : undefined,
+            battleCooldownTicks: document.getElementById('battle-cooldown-ticks').value
+                ? parseInt(document.getElementById('battle-cooldown-ticks').value)
+                : undefined,
+            spawnWeightFactor: document.getElementById('spawn-weight-factor').value
+                ? parseFloat(document.getElementById('spawn-weight-factor').value)
+                : undefined,
+            biomeTagBlacklist: this.selectedBiomeTagBlacklist, // Usar a lista de biomeTagBlacklist
+            biomeTagWhitelist: this.selectedBiomeTagWhitelist // Usar a lista de biomeTagWhitelist
+        };
+    }
+
+    // Função para gerenciar a conversão das informações do mob
+    handleMobConversion() {
+        try {
+            // Obter as configurações do mob
+            const mobConfig = this.getMobConfig();
+
+            // Verificar se há informações válidas
+            if (!mobConfig.type && !mobConfig.requiredDefeats && !mobConfig.maxTrainerWins &&
+                !mobConfig.maxTrainerDefeats && !mobConfig.battleCooldownTicks &&
+                !mobConfig.spawnWeightFactor && !mobConfig.biomeTagBlacklist &&
+                !mobConfig.biomeTagWhitelist) {
+                throw new Error('No mob information provided.');
+            }
+
+            // Converter as configurações do mob para JSON
+            const mobJson = JSON.stringify(mobConfig, null, 2);
+
+            // Exibir o resultado na área de saída
+            document.getElementById('output').textContent = mobJson;
+        } catch (error) {
+            document.getElementById('output').textContent = 'Error: ' + error.message;
+        }
+    }
 
     // Função para obter a configuração do treinador
     getTrainerConfig() {

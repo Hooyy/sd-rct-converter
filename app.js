@@ -157,25 +157,6 @@ class App {
         }
     }
 
-    handleMobConversion() {
-        try {
-            const mobConfig = this.getMobConfig();
-
-            // Verificar se o tipo do mob foi preenchido
-            if (!mobConfig.type) {
-                throw new Error('Mob type is required.');
-            }
-
-            // Converter as configurações do mob para JSON
-            const mobJson = JSON.stringify(mobConfig, null, 2);
-
-            // Exibir o resultado na área de saída
-            document.getElementById('output').textContent = mobJson;
-        } catch (error) {
-            document.getElementById('output').textContent = 'Error: ' + error.message;
-        }
-    }
-
 
     // Função para adicionar o item
     addItem() {

@@ -265,12 +265,16 @@
             font-size: 0.9em;
             margin-top: 5px;
         }
-        .showdown-link, .rct-link {
+
+        .showdown-link,
+        .rct-link {
             text-decoration: none;
             color: inherit;
             cursor: pointer;
         }
-        .showdown-link:hover, .rct-link:hover {
+
+        .showdown-link:hover,
+        .rct-link:hover {
             text-decoration: none;
             color: inherit;
         }
@@ -278,250 +282,251 @@
 </head>
 
 <body>
-<div class="theme-switch">
-    <span>☀️</span>
-    <label class="switch">
-        <input type="checkbox" id="theme-toggle">
-        <span class="slider"></span>
-    </label>
-    <span>🌙</span>
-</div>
-
-<h1>
-    <a href="https://play.pokemonshowdown.com" target="_blank" class="showdown-link">Showdown</a> to
-    <a href="https://srcmc.gitlab.io/rct/docs/latest/configuration/client_config/" target="_blank" class="rct-link">RCT</a> Converter
-</h1>
-
-<div class="layout">
-    <div class="input-section">
-        <h3 class="section-header">Input (Showdown Format)</h3>
-        <textarea id="input" placeholder="Paste Showdown format here..."></textarea>
+    <div class="theme-switch">
+        <span>☀️</span>
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+        <span>🌙</span>
     </div>
 
-    <div class="trainer-config">
-        <h3 class="section-header">Trainer Configuration</h3>
+    <h1>
+        <a href="https://play.pokemonshowdown.com" target="_blank" class="showdown-link">Showdown</a> to
+        <a href="https://srcmc.gitlab.io/rct/docs/latest/configuration/client_config/" target="_blank"
+            class="rct-link">RCT</a> Converter
+    </h1>
 
-        <!-- Novo seletor para alternar entre AI Settings e Main Settings -->
-        <div class="form-group">
-            <label for="config-selector">Configuration Type</label>
-            <select id="config-selector">
-                <option value="main">Trainer Settings</option>
-                <option value="ai">AI Settings</option>
-                <option value="mob">Mob Settings</option>
-            </select>
+    <div class="layout">
+        <div class="input-section">
+            <h3 class="section-header">Input (Showdown Format)</h3>
+            <textarea id="input" placeholder="Paste Showdown format here..."></textarea>
         </div>
 
-        <!-- Seção AI Settings (visível apenas quando "AI Settings" é selecionado) -->
-        <div id="ai-settings">
-            <div class="form-group">
-                <label for="max-select-margin">Max Select Margin</label>
-                <input type="number" id="max-select-margin" value="0.15" step="0.05" min="0" max="1">
-                <div class="warning" id="max-select-margin-warning"></div>
-            </div>
+        <div class="trainer-config">
+            <h3 class="section-header">Trainer Configuration</h3>
 
+            <!-- Novo seletor para alternar entre AI Settings e Main Settings -->
             <div class="form-group">
-                <label for="move-bias">Move Bias</label>
-                <input type="number" id="move-bias" value="1" step="0.1" min="0" max="1">
-            </div>
-
-            <div class="form-group">
-                <label for="stat-move-bias">Stat Move Bias</label>
-                <input type="number" id="stat-move-bias" value="0.1" step="0.1" min="0" max="1">
-            </div>
-
-            <div class="form-group">
-                <label for="switch-bias">Switch Bias</label>
-                <input type="number" id="switch-bias" value="0.65" step="0.1" min="0" max="1">
-            </div>
-
-            <div class="form-group">
-                <label for="item-bias">Item Bias</label>
-                <input type="number" id="item-bias" value="1" step="0.1" min="0" max="1">
-            </div>
-        </div>
-
-        <!-- Seção Mob Settings (visível apenas quando "Mob Settings" é selecionado) -->
-        <div id="mob-settings">
-            <div class="form-group">
-                <label for="mob-type">Mob Type</label>
-                <select id="mob-type">
-                    <option value="NORMAL">Normal</option>
-                    <option value="LEADER">Leader</option>
-                    <option value="E4">Elite Four</option>
-                    <option value="CHAMP">Champion</option>
-                    <option value="RIVAL">Rival</option>
-                    <option value="TEAM_ROCKET">Team Rocket</option>
+                <label for="config-selector">Configuration Type</label>
+                <select id="config-selector">
+                    <option value="main">Trainer Settings</option>
+                    <option value="ai">AI Settings</option>
+                    <option value="mob">Mob Settings</option>
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="max-trainer-wins">Max Trainer Wins</label>
-                <input type="number" id="max-trainer-wins" value="5" min="0">
-            </div>
-
-            <div class="form-group">
-                <label for="max-trainer-defeats">Max Trainer Defeats</label>
-                <input type="number" id="max-trainer-defeats" value="1" min="0">
-            </div>
-
-            <div class="form-group">
-                <label for="battle-cooldown-ticks">Battle Cooldown Ticks</label>
-                <input type="number" id="battle-cooldown-ticks" value="140" min="0">
-            </div>
-
-            <div class="form-group">
-                <label for="spawn-weight-factor">Spawn Weight Factor</label>
-                <input type="number" id="spawn-weight-factor" value="1" min="0" step="0.1">
-            </div>
-
-            <!-- Required Defeats -->
-            <div class="form-group">
-                <label for="required-defeats-select">Required Defeats</label>
-                <select id="required-defeats-select">
-                    <option value="">Select a Trainer</option>
-                    <option value="trainer_a">Trainer A</option>
-                    <option value="trainer_b">Trainer B</option>
-                    <option value="trainer_c">Trainer C</option>
-                    <option value="other">Other (Custom Trainer)</option>
-                </select>
-                <div id="required-defeats-custom-container" style="display: none;">
-                    <input type="text" id="required-defeats-custom" placeholder="Enter custom trainer ID">
+            <!-- Seção AI Settings (visível apenas quando "AI Settings" é selecionado) -->
+            <div id="ai-settings">
+                <div class="form-group">
+                    <label for="max-select-margin">Max Select Margin</label>
+                    <input type="number" id="max-select-margin" value="0.15" step="0.05" min="0" max="1">
+                    <div class="warning" id="max-select-margin-warning"></div>
                 </div>
-                <button id="add-required-defeat" style="margin-top: 10px;">Add Required Defeat</button>
-                <div id="selected-required-defeats" style="margin-top: 20px;">
-                    <strong>Selected Required Defeats:</strong>
-                    <ul id="required-defeats-list">
-                        <!-- Itens selecionados serão adicionados aqui -->
-                    </ul>
+
+                <div class="form-group">
+                    <label for="move-bias">Move Bias</label>
+                    <input type="number" id="move-bias" value="1" step="0.1" min="0" max="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="stat-move-bias">Stat Move Bias</label>
+                    <input type="number" id="stat-move-bias" value="0.1" step="0.1" min="0" max="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="switch-bias">Switch Bias</label>
+                    <input type="number" id="switch-bias" value="0.65" step="0.1" min="0" max="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="item-bias">Item Bias</label>
+                    <input type="number" id="item-bias" value="1" step="0.1" min="0" max="1">
                 </div>
             </div>
 
-            <!-- Biome Tag Blacklist -->
-            <div class="form-group">
-                <label for="biome-tag-blacklist-select">Biome Tag Blacklist</label>
-                <select id="biome-tag-blacklist-select">
-                    <option value="">Select a Biome Tag</option>
-                    <option value="is_forest">Forest</option>
-                    <option value="is_desert">Desert</option>
-                    <option value="is_ocean">Ocean</option>
-                    <option value="is_nether">Nether</option>
-                    <option value="is_end">End</option>
-                    <option value="other">Other (Custom Biome Tag)</option>
-                </select>
-                <div id="biome-tag-blacklist-custom-container" style="display: none;">
-                    <input type="text" id="biome-tag-blacklist-custom" placeholder="Enter custom biome tag">
+            <!-- Seção Mob Settings (visível apenas quando "Mob Settings" é selecionado) -->
+            <div id="mob-settings">
+                <div class="form-group">
+                    <label for="mob-type">Mob Type</label>
+                    <select id="mob-type">
+                        <option value="NORMAL">Normal</option>
+                        <option value="LEADER">Leader</option>
+                        <option value="E4">Elite Four</option>
+                        <option value="CHAMP">Champion</option>
+                        <option value="RIVAL">Rival</option>
+                        <option value="TEAM_ROCKET">Team Rocket</option>
+                    </select>
                 </div>
-                <button id="add-biome-tag-blacklist" style="margin-top: 10px;">Add Biome Tag</button>
-                <div id="selected-biome-tag-blacklist" style="margin-top: 20px;">
-                    <strong>Selected Biome Tags:</strong>
-                    <ul id="biome-tag-blacklist-list">
-                        <!-- Itens selecionados serão adicionados aqui -->
-                    </ul>
+
+                <div class="form-group">
+                    <label for="max-trainer-wins">Max Trainer Wins</label>
+                    <input type="number" id="max-trainer-wins" value="5" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="max-trainer-defeats">Max Trainer Defeats</label>
+                    <input type="number" id="max-trainer-defeats" value="1" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="battle-cooldown-ticks">Battle Cooldown Ticks</label>
+                    <input type="number" id="battle-cooldown-ticks" value="140" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="spawn-weight-factor">Spawn Weight Factor</label>
+                    <input type="number" id="spawn-weight-factor" value="1" min="0" step="0.1">
+                </div>
+
+                <!-- Required Defeats -->
+                <div class="form-group">
+                    <label for="required-defeats-select">Required Defeats</label>
+                    <select id="required-defeats-select">
+                        <option value="">Select a Trainer</option>
+                        <option value="leader_brock_019e">Leader Brock</option>
+                        <option value="trainer_b">Trainer B</option>
+                        <option value="trainer_c">Trainer C</option>
+                        <option value="other">Other (Custom Trainer)</option>
+                    </select>
+                    <div id="required-defeats-custom-container" style="display: none;">
+                        <input type="text" id="required-defeats-custom" placeholder="Enter custom trainer ID">
+                    </div>
+                    <button id="add-required-defeat" style="margin-top: 10px;">Add Required Defeat</button>
+                    <div id="selected-required-defeats" style="margin-top: 20px;">
+                        <strong>Selected Required Defeats:</strong>
+                        <ul id="required-defeats-list">
+                            <!-- Itens selecionados serão adicionados aqui -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Biome Tag Blacklist -->
+                <div class="form-group">
+                    <label for="biome-tag-blacklist-select">Biome Tag Blacklist</label>
+                    <select id="biome-tag-blacklist-select">
+                        <option value="">Select a Biome Tag</option>
+                        <option value="is_forest">Forest</option>
+                        <option value="is_desert">Desert</option>
+                        <option value="is_ocean">Ocean</option>
+                        <option value="is_nether">Nether</option>
+                        <option value="is_end">End</option>
+                        <option value="other">Other (Custom Biome Tag)</option>
+                    </select>
+                    <div id="biome-tag-blacklist-custom-container" style="display: none;">
+                        <input type="text" id="biome-tag-blacklist-custom" placeholder="Enter custom biome tag">
+                    </div>
+                    <button id="add-biome-tag-blacklist" style="margin-top: 10px;">Add Biome Tag</button>
+                    <div id="selected-biome-tag-blacklist" style="margin-top: 20px;">
+                        <strong>Selected Biome Tags:</strong>
+                        <ul id="biome-tag-blacklist-list">
+                            <!-- Itens selecionados serão adicionados aqui -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Biome Tag Whitelist -->
+                <div class="form-group">
+                    <label for="biome-tag-whitelist-select">Biome Tag Whitelist</label>
+                    <select id="biome-tag-whitelist-select">
+                        <option value="">Select a Biome Tag</option>
+                        <option value="is_forest">Forest</option>
+                        <option value="is_desert">Desert</option>
+                        <option value="is_ocean">Ocean</option>
+                        <option value="is_nether">Nether</option>
+                        <option value="is_end">End</option>
+                        <option value="other">Other (Custom Biome Tag)</option>
+                    </select>
+                    <div id="biome-tag-whitelist-custom-container" style="display: none;">
+                        <input type="text" id="biome-tag-whitelist-custom" placeholder="Enter custom biome tag">
+                    </div>
+                    <button id="add-biome-tag-whitelist" style="margin-top: 10px;">Add Biome Tag</button>
+                    <div id="selected-biome-tag-whitelist" style="margin-top: 20px;">
+                        <strong>Selected Biome Tags:</strong>
+                        <ul id="biome-tag-whitelist-list">
+                            <!-- Itens selecionados serão adicionados aqui -->
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <!-- Biome Tag Whitelist -->
-            <div class="form-group">
-                <label for="biome-tag-whitelist-select">Biome Tag Whitelist</label>
-                <select id="biome-tag-whitelist-select">
-                    <option value="">Select a Biome Tag</option>
-                    <option value="is_forest">Forest</option>
-                    <option value="is_desert">Desert</option>
-                    <option value="is_ocean">Ocean</option>
-                    <option value="is_nether">Nether</option>
-                    <option value="is_end">End</option>
-                    <option value="other">Other (Custom Biome Tag)</option>
-                </select>
-                <div id="biome-tag-whitelist-custom-container" style="display: none;">
-                    <input type="text" id="biome-tag-whitelist-custom" placeholder="Enter custom biome tag">
+            <!-- Seção Main Settings (visível apenas quando "Main Settings" é selecionado) -->
+            <div id="main-settings">
+                <div class="form-group">
+                    <label for="trainer-name">Trainer Name</label>
+                    <input type="text" id="trainer-name" placeholder="Enter name" required>
                 </div>
-                <button id="add-biome-tag-whitelist" style="margin-top: 10px;">Add Biome Tag</button>
-                <div id="selected-biome-tag-whitelist" style="margin-top: 20px;">
-                    <strong>Selected Biome Tags:</strong>
-                    <ul id="biome-tag-whitelist-list">
-                        <!-- Itens selecionados serão adicionados aqui -->
-                    </ul>
+
+                <div class="form-group">
+                    <label for="trainer-identity">Trainer Identity</label>
+                    <input type="text" id="trainer-identity" placeholder="Enter trainer identity">
                 </div>
-            </div>
-        </div>
 
-        <!-- Seção Main Settings (visível apenas quando "Main Settings" é selecionado) -->
-        <div id="main-settings">
-            <div class="form-group">
-                <label for="trainer-name">Trainer Name</label>
-                <input type="text" id="trainer-name" placeholder="Enter name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="trainer-identity">Trainer Identity</label>
-                <input type="text" id="trainer-identity" placeholder="Enter trainer identity">
-            </div>
-
-            <div class="form-group">
-                <label for="battle-format">Battle Format</label>
-                <select id="battle-format">
-                    <option value="GEN_9_SINGLES">Gen 9 Singles</option>
-                    <option value="GEN_9_DOUBLES">Gen 9 Doubles</option>
-                    <option value="GEN_9_TRIPLES">Gen 9 Triples</option>
-                    <option value="GEN_9_MULTI">Gen 9 Multi</option>
-                    <option value="GEN_9_ROYAL">Gen 9 Royal</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="max-items">Max Item Uses</label>
-                <input type="number" id="max-items" value="2" min="0" max="99">
-            </div>
-
-            <div class="form-group">
-                <label for="item-type">Trainer Items</label>
-                <select id="item-type">
-                    <option value="">Select an Item</option>
-                    <option value="cobblemon:full_restore">Full Restore</option>
-                    <option value="cobblemon:hyper_potion">Hyper Potion</option>
-                    <option value="cobblemon:max_potion">Max Potion</option>
-                    <option value="cobblemon:potion">Potion</option>
-                    <option value="cobblemon:revive">Revive</option>
-                    <option value="cobblemon:max_revive">Max Revive</option>
-                    <option value="other">Other (Custom Item)</option>
-                </select>
-
-                <!-- Custom item input that appears when "Other" is selected -->
-                <div id="custom-item-container" style="display: none;">
-                    <input type="text" id="custom-item" placeholder="Enter custom item (mod:item_name)">
+                <div class="form-group">
+                    <label for="battle-format">Battle Format</label>
+                    <select id="battle-format">
+                        <option value="GEN_9_SINGLES">Gen 9 Singles</option>
+                        <option value="GEN_9_DOUBLES">Gen 9 Doubles</option>
+                        <option value="GEN_9_TRIPLES">Gen 9 Triples</option>
+                        <option value="GEN_9_MULTI">Gen 9 Multi</option>
+                        <option value="GEN_9_ROYAL">Gen 9 Royal</option>
+                    </select>
                 </div>
-                <button id="add-item-button" style="margin-top: 10px;">Add Item</button>
 
-                <!-- Area to display selected items -->
-                <div id="selected-items" style="margin-top: 20px;">
-                    <strong>Selected Items:</strong>
-                    <ul id="selected-items-list">
-                        <!-- Dynamically generated list items -->
-                    </ul>
+                <div class="form-group">
+                    <label for="max-items">Max Item Uses</label>
+                    <input type="number" id="max-items" value="2" min="0" max="99">
+                </div>
+
+                <div class="form-group">
+                    <label for="item-type">Trainer Items</label>
+                    <select id="item-type">
+                        <option value="">Select an Item</option>
+                        <option value="cobblemon:full_restore">Full Restore</option>
+                        <option value="cobblemon:hyper_potion">Hyper Potion</option>
+                        <option value="cobblemon:max_potion">Max Potion</option>
+                        <option value="cobblemon:potion">Potion</option>
+                        <option value="cobblemon:revive">Revive</option>
+                        <option value="cobblemon:max_revive">Max Revive</option>
+                        <option value="other">Other (Custom Item)</option>
+                    </select>
+
+                    <!-- Custom item input that appears when "Other" is selected -->
+                    <div id="custom-item-container" style="display: none;">
+                        <input type="text" id="custom-item" placeholder="Enter custom item (mod:item_name)">
+                    </div>
+                    <button id="add-item-button" style="margin-top: 10px;">Add Item</button>
+
+                    <!-- Area to display selected items -->
+                    <div id="selected-items" style="margin-top: 20px;">
+                        <strong>Selected Items:</strong>
+                        <ul id="selected-items-list">
+                            <!-- Dynamically generated list items -->
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<div class="button-container">
-    <button id="convert-button">Convert Trainer Info</button>
-    <button id="convert-mob-button">Convert Mob Info</button>
-    <button id="download-json-button">Download JSON</button>
-</div>
+    <div class="button-container">
+        <button id="convert-button">Convert Trainer Info</button>
+        <button id="convert-mob-button">Convert Mob Info</button>
+        <button id="download-json-button">Download JSON</button>
+    </div>
 
 
-<div class="output-section">
-    <h3 class="section-header">Output (RCT Format)</h3>
-    <pre id="output"></pre>
-</div>
+    <div class="output-section">
+        <h3 class="section-header">Output (RCT Format)</h3>
+        <pre id="output"></pre>
+    </div>
 
-<script src="trainer-presets.js"></script>
-<script src="converter.js"></script>
-<script src="app.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="trainer-presets.js"></script>
+    <script src="converter.js"></script>
+    <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 </body>
 

@@ -60,46 +60,41 @@ class App {
 
         // Garantir que a seção correta seja exibida ao carregar a página
         const initialSelection = document.getElementById('config-selector').value;
-            this.toggleConfigSections(initialSelection);
+        this.toggleConfigSections(initialSelection);
 
         // Required Defeats
-        document.getElementById('required-defeats-select')?.addEventListener('change', (e) => {
-            this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
-        });
         document.getElementById('add-required-defeat')?.addEventListener('click', () => {
             this.addItemToList('required-defeats-select', 'required-defeats-custom', 'required-defeats-list', this.selectedRequiredDefeats);
         });
 
         // Required Defeats
-                document.getElementById('required-defeats-select')?.addEventListener('change', (e) => {
-                    this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
-                });
-                document.getElementById('add-required-defeat')?.addEventListener('click', () => {
-                    this.addItemToList('required-defeats-select', 'required-defeats-custom', 'required-defeats-list', this.selectedRequiredDefeats);
-                });
+        document.getElementById('required-defeats-select')?.addEventListener('change', (e) => {
+            this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
+        });
 
-                // Biome Tag Blacklist
-                document.getElementById('biome-tag-blacklist-select')?.addEventListener('change', (e) => {
-                    this.toggleCustomInput(e.target.value, 'biome-tag-blacklist-custom-container');
-                });
-                document.getElementById('add-biome-tag-blacklist')?.addEventListener('click', () => {
-                    this.addItemToList('biome-tag-blacklist-select', 'biome-tag-blacklist-custom', 'biome-tag-blacklist-list', this.selectedBiomeTagBlacklist);
-                });
 
-                // Biome Tag Whitelist
-                document.getElementById('biome-tag-whitelist-select')?.addEventListener('change', (e) => {
-                    this.toggleCustomInput(e.target.value, 'biome-tag-whitelist-custom-container');
-                });
-                document.getElementById('add-biome-tag-whitelist')?.addEventListener('click', () => {
-                    this.addItemToList('biome-tag-whitelist-select', 'biome-tag-whitelist-custom', 'biome-tag-whitelist-list', this.selectedBiomeTagWhitelist);
-                });
-            }
+        // Biome Tag Blacklist
+        document.getElementById('biome-tag-blacklist-select')?.addEventListener('change', (e) => {
+            this.toggleCustomInput(e.target.value, 'biome-tag-blacklist-custom-container');
+        });
+        document.getElementById('add-biome-tag-blacklist')?.addEventListener('click', () => {
+            this.addItemToList('biome-tag-blacklist-select', 'biome-tag-blacklist-custom', 'biome-tag-blacklist-list', this.selectedBiomeTagBlacklist);
+        });
 
-            toggleCustomInput(value, containerId) {
-                const customInputContainer = document.getElementById(containerId);
-                if (customInputContainer) {
-                    customInputContainer.style.display = value === 'other' ? 'block' : 'none';
-                }
+        // Biome Tag Whitelist
+        document.getElementById('biome-tag-whitelist-select')?.addEventListener('change', (e) => {
+            this.toggleCustomInput(e.target.value, 'biome-tag-whitelist-custom-container');
+        });
+        document.getElementById('add-biome-tag-whitelist')?.addEventListener('click', () => {
+            this.addItemToList('biome-tag-whitelist-select', 'biome-tag-whitelist-custom', 'biome-tag-whitelist-list', this.selectedBiomeTagWhitelist);
+        });
+    }
+
+    toggleCustomInput(value, containerId) {
+        const customInputContainer = document.getElementById(containerId);
+        if (customInputContainer) {
+            customInputContainer.style.display = value === 'other' ? 'block' : 'none';
+        }
     }
 
     // Função para alternar entre as seções de configuração
@@ -131,7 +126,11 @@ class App {
         if (select && list) {
             const selectedValue = select.value === 'other' ? customInput.value.trim() : select.value;
 
-            if (selectedValue) {
+            // Debug: Exibir o valor selecionado
+            console.log('Selected Value:', selectedValue);
+
+            // Verifica se o valor já existe na lista
+            if (selectedValue && !selectedItems.includes(selectedValue)) {
                 selectedItems.push(selectedValue);
                 this.updateList(list, selectedItems);
 
@@ -139,58 +138,28 @@ class App {
                 if (select.value === 'other') {
                     customInput.value = '';
                 }
+            } else {
+                console.warn('Item já existe na lista ou valor inválido.');
             }
         }
     }
 
     updateList(list, items) {
         if (list) {
-            list.innerHTML = ''; // Limpa a lista
+            list.innerHTML = ''; // Limpar lista
             items.forEach(item => {
                 const listItem = document.createElement('li');
-                listItem.textContent = item;
+                // Se o item for um array, exiba com colchetes e aspas, sem espaços após as vírgulas
+                if (Array.isArray(item)) {
+                    listItem.textContent = `[${item.map(i => `"${i}"`).join(', ')}]`;
+                } else {
+                    listItem.textContent = item; // Exibir como string
+                }
                 list.appendChild(listItem);
             });
         }
     }
 
-    handleMobConversion() {
-        try {
-            const mobConfig = this.getMobConfig();
-
-            // Verificar se o tipo do mob foi preenchido
-            if (!mobConfig.type) {
-                throw new Error('Mob type is required.');
-            }
-
-            // Converter as configurações do mob para JSON
-            const mobJson = JSON.stringify(mobConfig, null, 2);
-
-            // Exibir o resultado na área de saída
-            document.getElementById('output').textContent = mobJson;
-        } catch (error) {
-            document.getElementById('output').textContent = 'Error: ' + error.message;
-        }
-    }
-
-    handleMobConversion() {
-        try {
-            const mobConfig = this.getMobConfig();
-
-            // Verificar se o tipo do mob foi preenchido
-            if (!mobConfig.type) {
-                throw new Error('Mob type is required.');
-            }
-
-            // Converter as configurações do mob para JSON
-            const mobJson = JSON.stringify(mobConfig, null, 2);
-
-            // Exibir o resultado na área de saída
-            document.getElementById('output').textContent = mobJson;
-        } catch (error) {
-            document.getElementById('output').textContent = 'Error: ' + error.message;
-        }
-    }
 
     // Função para adicionar o item
     addItem() {
@@ -224,6 +193,43 @@ class App {
         }
 
         this.updateSelectedItemList();  // Atualiza a lista de itens
+    }
+
+    addItemToList(selectId, customInputId, listId, selectedItems) {
+        const select = document.getElementById(selectId);
+        const customInput = document.getElementById(customInputId);
+        const list = document.getElementById(listId);
+
+        if (select && list) {
+            let selectedValue;
+
+            if (select.value === 'other') {
+                // Processar input customizado
+                selectedValue = customInput.value.trim();
+                if (selectedValue) {
+                    if (selectedValue.includes(',')) {
+                        // Dividir em array de IDs
+                        const items = selectedValue.split(',').map(item => item.trim()).filter(item => item);
+                        if (items.length > 0) {
+                            selectedItems.push(items); // Adicionar como array
+                        }
+                    } else {
+                        selectedItems.push(selectedValue); // Adicionar como string
+                    }
+                    // Limpar input
+                    customInput.value = '';
+                }
+            } else {
+                // Adicionar valor do select como uma string
+                selectedValue = select.value;
+                if (selectedValue) {
+                    selectedItems.push(selectedValue);
+                }
+            }
+
+            // Atualizar lista na interface
+            this.updateList(list, selectedItems);
+        }
     }
 
     // Exibe ou oculta o input para item customizado
@@ -373,7 +379,7 @@ class App {
     getMobConfig() {
         return {
             type: document.getElementById('mob-type').value || undefined,
-            requiredDefeats: this.selectedRequiredDefeats, // Usar a lista de requiredDefeats
+            requiredDefeats: this.selectedRequiredDefeats, // Usar a lista de Required Defeats
             maxTrainerWins: document.getElementById('max-trainer-wins').value
                 ? parseInt(document.getElementById('max-trainer-wins').value)
                 : undefined,
@@ -394,19 +400,26 @@ class App {
     // Função para gerenciar a conversão das informações do mob
     handleMobConversion() {
         try {
-            // Obter as configurações do mob
             const mobConfig = this.getMobConfig();
 
-            // Verificar se há informações válidas
-            if (!mobConfig.type && !mobConfig.requiredDefeats && !mobConfig.maxTrainerWins &&
-                !mobConfig.maxTrainerDefeats && !mobConfig.battleCooldownTicks &&
-                !mobConfig.spawnWeightFactor && !mobConfig.biomeTagBlacklist &&
-                !mobConfig.biomeTagWhitelist) {
-                throw new Error('No mob information provided.');
-            }
+            // Formatar requiredDefeats manualmente
+            const formattedRequiredDefeats = mobConfig.requiredDefeats
+                .map(item => Array.isArray(item) ? `[${item.map(i => `"${i}"`).join(', ')}]` : `"${item}"`)
+                .join(',\n    ');
 
-            // Converter as configurações do mob para JSON
-            const mobJson = JSON.stringify(mobConfig, null, 2);
+            // Construir o JSON manualmente para requiredDefeats
+            const mobJson = `{
+      "type": ${JSON.stringify(mobConfig.type)},
+      "requiredDefeats": [
+        ${formattedRequiredDefeats}
+      ],
+      "maxTrainerWins": ${JSON.stringify(mobConfig.maxTrainerWins)},
+      "maxTrainerDefeats": ${JSON.stringify(mobConfig.maxTrainerDefeats)},
+      "battleCooldownTicks": ${JSON.stringify(mobConfig.battleCooldownTicks)},
+      "spawnWeightFactor": ${JSON.stringify(mobConfig.spawnWeightFactor)},
+      "biomeTagBlacklist": ${JSON.stringify(mobConfig.biomeTagBlacklist)},
+      "biomeTagWhitelist": ${JSON.stringify(mobConfig.biomeTagWhitelist)}
+    }`;
 
             // Exibir o resultado na área de saída
             document.getElementById('output').textContent = mobJson;
@@ -414,6 +427,7 @@ class App {
             document.getElementById('output').textContent = 'Error: ' + error.message;
         }
     }
+
 
     // Função para obter a configuração do treinador
     getTrainerConfig() {

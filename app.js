@@ -63,9 +63,6 @@ class App {
         this.toggleConfigSections(initialSelection);
 
         // Required Defeats
-        document.getElementById('required-defeats-select')?.addEventListener('change', (e) => {
-            this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
-        });
         document.getElementById('add-required-defeat')?.addEventListener('click', () => {
             this.addItemToList('required-defeats-select', 'required-defeats-custom', 'required-defeats-list', this.selectedRequiredDefeats);
         });
@@ -131,7 +128,11 @@ class App {
         if (select && list) {
             const selectedValue = select.value === 'other' ? customInput.value.trim() : select.value;
 
-            if (selectedValue) {
+            // Debug: Exibir o valor selecionado
+            console.log('Selected Value:', selectedValue);
+
+            // Verifica se o valor já existe na lista
+            if (selectedValue && !selectedItems.includes(selectedValue)) {
                 selectedItems.push(selectedValue);
                 this.updateList(list, selectedItems);
 
@@ -139,6 +140,8 @@ class App {
                 if (select.value === 'other') {
                     customInput.value = '';
                 }
+            } else {
+                console.warn('Item já existe na lista ou valor inválido.');
             }
         }
     }
@@ -173,24 +176,6 @@ class App {
         }
     }
 
-    handleMobConversion() {
-        try {
-            const mobConfig = this.getMobConfig();
-
-            // Verificar se o tipo do mob foi preenchido
-            if (!mobConfig.type) {
-                throw new Error('Mob type is required.');
-            }
-
-            // Converter as configurações do mob para JSON
-            const mobJson = JSON.stringify(mobConfig, null, 2);
-
-            // Exibir o resultado na área de saída
-            document.getElementById('output').textContent = mobJson;
-        } catch (error) {
-            document.getElementById('output').textContent = 'Error: ' + error.message;
-        }
-    }
 
     // Função para adicionar o item
     addItem() {

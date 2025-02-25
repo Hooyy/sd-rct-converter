@@ -207,23 +207,19 @@ class App {
                 // Processar input customizado
                 selectedValue = customInput.value.trim();
                 if (selectedValue) {
-                    if (selectedValue.includes(',')) {
-                        // Dividir em array de IDs
-                        const items = selectedValue.split(',').map(item => item.trim()).filter(item => item);
-                        if (items.length > 0) {
-                            selectedItems.push(items); // Adicionar como array
-                        }
-                    } else {
-                        selectedItems.push(selectedValue); // Adicionar como string
+                    // Sempre adicionar como array
+                    const items = selectedValue.split(',').map(item => item.trim()).filter(item => item);
+                    if (items.length > 0) {
+                        selectedItems.push(items); // Adicionar como array
                     }
                     // Limpar input
                     customInput.value = '';
                 }
             } else {
-                // Adicionar valor do select como uma string
+                // Adicionar valor do select como array
                 selectedValue = select.value;
                 if (selectedValue) {
-                    selectedItems.push(selectedValue);
+                    selectedItems.push([selectedValue]); // Adicionar como array com um único elemento
                 }
             }
 

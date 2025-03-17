@@ -88,6 +88,11 @@ class App {
         document.getElementById('add-biome-tag-whitelist')?.addEventListener('click', () => {
             this.addItemToList('biome-tag-whitelist-select', 'biome-tag-whitelist-custom', 'biome-tag-whitelist-list', this.selectedBiomeTagWhitelist);
         });
+
+        // Handler para o upload da imagem
+        document.getElementById('trainer-image')?.addEventListener('change', (e) => {
+            this.handleImageUpload(e.target.files[0]);
+        });
     }
 
     toggleCustomInput(value, containerId) {
@@ -146,14 +151,13 @@ class App {
 
     updateList(list, items) {
         if (list) {
-            list.innerHTML = ''; // Limpar lista
+            list.innerHTML = ''; // Clear the list
             items.forEach(item => {
                 const listItem = document.createElement('li');
-                // Se o item for um array, exiba com colchetes e aspas, sem espaços após as vírgulas
                 if (Array.isArray(item)) {
                     listItem.textContent = `[${item.map(i => `"${i}"`).join(', ')}]`;
                 } else {
-                    listItem.textContent = item; // Exibir como string
+                    listItem.textContent = item; // Display as a string
                 }
                 list.appendChild(listItem);
             });
@@ -201,30 +205,41 @@ class App {
         const list = document.getElementById(listId);
 
         if (select && list) {
-            let selectedValue;
+            const selectedValue = select.value === 'other' ? customInput.value.trim() : select.value;
 
-            if (select.value === 'other') {
-                // Processar input customizado
-                selectedValue = customInput.value.trim();
-                if (selectedValue) {
-                    // Sempre adicionar como array
+            // Check if the item already exists in the list
+            const itemIndex = selectedItems.findIndex(item => {
+                if (Array.isArray(item)) {
+                    return item.includes(selectedValue);
+                } else {
+                    return item === selectedValue;
+                }
+            });
+
+            if (itemIndex !== -1) {
+                // If the item exists, remove it
+                selectedItems.splice(itemIndex, 1);
+            } else {
+                // If the item doesn't exist, add it
+                if (select.value === 'other') {
+                    // For custom inputs, split by comma and add as an array
                     const items = selectedValue.split(',').map(item => item.trim()).filter(item => item);
                     if (items.length > 0) {
-                        selectedItems.push(items); // Adicionar como array
+                        selectedItems.push(items);
                     }
-                    // Limpar input
-                    customInput.value = '';
-                }
-            } else {
-                // Adicionar valor do select como array
-                selectedValue = select.value;
-                if (selectedValue) {
-                    selectedItems.push([selectedValue]); // Adicionar como array com um único elemento
+                } else {
+                    // For dropdown selections, add as a single item
+                    selectedItems.push([selectedValue]);
                 }
             }
 
-            // Atualizar lista na interface
+            // Update the list in the UI
             this.updateList(list, selectedItems);
+
+            // Clear the custom input if "other" was selected
+            if (select.value === 'other') {
+                customInput.value = '';
+            }
         }
     }
 
@@ -330,7 +345,7 @@ class App {
             const trainerConfig = this.getTrainerConfig();
             const mobConfig = this.getMobConfig();
 
-            // Verificar se o nome do treinador foi preenchido
+            // Check if the trainer name is filled
             if (!trainerConfig.name) {
                 throw new Error('Trainer name is required.');
             }
@@ -346,16 +361,16 @@ class App {
 
                 const zip = new JSZip();
 
-                // Pasta data/rctmod/trainers
+                // Folder data/rctmod/trainers
                 const trainersFolder = zip.folder("data/rctmod/trainers");
                 trainersFolder.file(`${trainerName}.json`, result.result);
 
-                // Pasta data/rctmod/mobs/single
+                // Folder data/rctmod/mobs/single
                 const mobsFolder = zip.folder("data/rctmod/mobs");
                 const singleFolder = mobsFolder.folder("single");
                 singleFolder.file(`${trainerName}.json`, JSON.stringify(mobConfig, null, 2));
 
-                // Gerar o arquivo ZIP
+                // Generate the ZIP file
                 zip.generateAsync({ type: "blob" })
                     .then((blob) => {
                         saveAs(blob, `RCTrainer_${trainerName}.zip`);
@@ -368,14 +383,14 @@ class App {
             }
         } catch (error) {
             console.error('Error generating JSON:', error.message);
-            alert(error.message); // Mostra uma mensagem de erro para o usuário
+            alert(error.message); // Show an error message to the user
         }
     }
 
     getMobConfig() {
         return {
             type: document.getElementById('mob-type').value || undefined,
-            requiredDefeats: this.selectedRequiredDefeats, // Usar a lista de Required Defeats
+            requiredDefeats: this.selectedRequiredDefeats,
             maxTrainerWins: document.getElementById('max-trainer-wins').value
                 ? parseInt(document.getElementById('max-trainer-wins').value)
                 : undefined,
@@ -388,8 +403,10 @@ class App {
             spawnWeightFactor: document.getElementById('spawn-weight-factor').value
                 ? parseFloat(document.getElementById('spawn-weight-factor').value)
                 : undefined,
-            biomeTagBlacklist: this.selectedBiomeTagBlacklist, // Usar a lista de biomeTagBlacklist
-            biomeTagWhitelist: this.selectedBiomeTagWhitelist // Usar a lista de biomeTagWhitelist
+            biomeTagBlacklist: this.selectedBiomeTagBlacklist,
+            biomeTagWhitelist: this.selectedBiomeTagWhitelist,
+            optional: document.getElementById('optional').value === 'true', // Add optional field
+            series: document.getElementById('series').value ? [document.getElementById('series').value] : undefined // Add series field
         };
     }
 
@@ -398,26 +415,28 @@ class App {
         try {
             const mobConfig = this.getMobConfig();
 
-            // Formatar requiredDefeats manualmente
+            // Format requiredDefeats manually
             const formattedRequiredDefeats = mobConfig.requiredDefeats
                 .map(item => Array.isArray(item) ? `[${item.map(i => `"${i}"`).join(', ')}]` : `"${item}"`)
                 .join(',\n    ');
 
-            // Construir o JSON manualmente para requiredDefeats
+            // Build the JSON manually for requiredDefeats
             const mobJson = `{
-      "type": ${JSON.stringify(mobConfig.type)},
-      "requiredDefeats": [
-        ${formattedRequiredDefeats}
-      ],
-      "maxTrainerWins": ${JSON.stringify(mobConfig.maxTrainerWins)},
-      "maxTrainerDefeats": ${JSON.stringify(mobConfig.maxTrainerDefeats)},
-      "battleCooldownTicks": ${JSON.stringify(mobConfig.battleCooldownTicks)},
-      "spawnWeightFactor": ${JSON.stringify(mobConfig.spawnWeightFactor)},
-      "biomeTagBlacklist": ${JSON.stringify(mobConfig.biomeTagBlacklist)},
-      "biomeTagWhitelist": ${JSON.stringify(mobConfig.biomeTagWhitelist)}
-    }`;
+            "type": ${JSON.stringify(mobConfig.type)},
+            "requiredDefeats": [
+                ${formattedRequiredDefeats}
+            ],
+            "maxTrainerWins": ${JSON.stringify(mobConfig.maxTrainerWins)},
+            "maxTrainerDefeats": ${JSON.stringify(mobConfig.maxTrainerDefeats)},
+            "battleCooldownTicks": ${JSON.stringify(mobConfig.battleCooldownTicks)},
+            "spawnWeightFactor": ${JSON.stringify(mobConfig.spawnWeightFactor)},
+            "biomeTagBlacklist": ${JSON.stringify(mobConfig.biomeTagBlacklist)},
+            "biomeTagWhitelist": ${JSON.stringify(mobConfig.biomeTagWhitelist)},
+            "optional": ${JSON.stringify(mobConfig.optional)},
+            "series": ${JSON.stringify(mobConfig.series)}
+            }`;
 
-            // Exibir o resultado na área de saída
+            // Display the result in the output area
             document.getElementById('output').textContent = mobJson;
         } catch (error) {
             document.getElementById('output').textContent = 'Error: ' + error.message;

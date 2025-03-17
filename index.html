@@ -306,6 +306,11 @@
         <div class="trainer-config">
             <h3 class="section-header">Trainer Configuration</h3>
 
+            <div class="form-group">
+                <label for="trainer-image">Trainer Skin</label>
+                <input type="file" id="trainer-image" accept="image/*">
+            </div>
+
             <!-- Novo seletor para alternar entre AI Settings e Main Settings -->
             <div class="form-group">
                 <label for="config-selector">Configuration Type</label>
@@ -356,6 +361,11 @@
                         <option value="CHAMP">Champion</option>
                         <option value="RIVAL">Rival</option>
                         <option value="TEAM_ROCKET">Team Rocket</option>
+                        <option value="TEAM_GALACTIC">Team Galactic</option>
+                        <option value="TEAM_SHADOW">Team Shadow</option>
+                        <option value="BATTLEGROUND">Battleground</option>
+                        <option value="LIGHT_OF_RUIN">Light of Ruin</option>
+                        <option value="UNBOUND">Unbound</option>
                     </select>
                 </div>
 
@@ -370,8 +380,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="battle-cooldown-ticks">Battle Cooldown Ticks</label>
+                    <label for="battle-cooldown-ticks">Cooldown (20 Ticks = 1 Sec)</label>
                     <input type="number" id="battle-cooldown-ticks" value="140" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="optional">Optional</label>
+                    <select id="optional">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="series">Series</label>
+                    <input type="text" id="series" placeholder="Enter series name (e.g., unbound)">
                 </div>
 
                 <div class="form-group">

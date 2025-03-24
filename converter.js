@@ -2,41 +2,52 @@ const ShowdownConverter = {
     // Main conversion function that ties everything together
     convert: function (showdownFormat, trainerConfig) {
         try {
-            // Parse the Showdown format into a list of Pokémon
             const pokemonList = this.parseShowdownFormat(showdownFormat);
 
+            // Definir valores padrão das AI Settings
+            const aiDefaults = {
+                maxSelectMargin: 0.15,
+                moveBias: 1,
+                statMoveBias: 0.1,
+                switchBias: 0.65,
+                itemBias: 1
+            };
+
+            // Criar o objeto ai.data, omitindo valores padrão
+            const aiData = {};
+            if (trainerConfig.maxSelectMargin !== aiDefaults.maxSelectMargin) {
+                aiData.maxSelectMargin = trainerConfig.maxSelectMargin;
+            }
+            if (trainerConfig.moveBias !== aiDefaults.moveBias) {
+                aiData.moveBias = trainerConfig.moveBias;
+            }
+            if (trainerConfig.statMoveBias !== aiDefaults.statMoveBias) {
+                aiData.statMoveBias = trainerConfig.statMoveBias;
+            }
+            if (trainerConfig.switchBias !== aiDefaults.switchBias) {
+                aiData.switchBias = trainerConfig.switchBias;
+            }
+            if (trainerConfig.itemBias !== aiDefaults.itemBias) {
+                aiData.itemBias = trainerConfig.itemBias;
+            }
+
             const output = {
-                // Trainer configuration
                 name: trainerConfig.name || "Trainer",
-
-                // Only include identity if it's not empty
                 ...(trainerConfig.identity && { identity: trainerConfig.identity }),
-
-                // AI configuration - includes multiple biases for decision-making
-                ai: {
-                    type: "rct",
-                    data: {
-                        maxSelectMargin: parseFloat(trainerConfig.maxSelectMargin) || 0,
-                        moveBias: parseFloat(trainerConfig.moveBias) || 0,
-                        statMoveBias: parseFloat(trainerConfig.statMoveBias) || 0,
-                        switchBias: parseFloat(trainerConfig.switchBias) || 0,
-                        itemBias: parseFloat(trainerConfig.itemBias) || 0
+                // Só inclui 'ai' se houver valores não-padrão
+                ...(Object.keys(aiData).length > 0 && {
+                    ai: {
+                        type: "rct",
+                        data: aiData
                     }
-                },
-
-                // Battle rules - controls item usage during battle
+                }),
                 battleRules: {
-                    maxItemUses: parseInt(trainerConfig.maxItems) || 0
+                    maxItemUses: trainerConfig.maxItems || 0
                 },
-
-                // Items the trainer can use during battle
                 bag: this.buildBag(trainerConfig.itemType),
-
-                // The team of Pokémon this trainer will use
                 team: pokemonList
             };
 
-            // Only include battle format if one was specified
             if (trainerConfig.battleFormat) {
                 output.battleFormat = trainerConfig.battleFormat;
             }

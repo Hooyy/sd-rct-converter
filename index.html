@@ -94,7 +94,7 @@
         /* Main Layout Grid */
         .layout {
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 20px;
             min-height: 500px;
@@ -112,6 +112,13 @@
             flex-direction: column;
             height: 100%;
             box-sizing: border-box;
+        }
+
+        .trainer-config {
+            flex-wrap: wrap;
+            /* Permite que os itens quebrem para a próxima linha */
+            gap: 10px;
+            /* Espaço entre os form-groups */
         }
 
         /* Section Headers */
@@ -166,6 +173,17 @@
 
         input[type="number"] {
             width: 80px;
+        }
+
+        .trainer-config .form-group-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* Duas colunas iguais */
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
         }
 
         /* Button Styles */
@@ -309,6 +327,11 @@
             <div class="form-group">
                 <label for="trainer-image">Trainer Skin</label>
                 <input type="file" id="trainer-image" accept="image/*">
+                <div id="image-status" style="margin-top: 5px;">
+                    <span id="selected-image-name">Nenhuma textura selecionada</span>
+                    <button id="remove-image" style="display: none; margin-left: 10px;"
+                        class="item-button remove">Remover</button>
+                </div>
             </div>
 
             <!-- Novo seletor para alternar entre AI Settings e Main Settings -->

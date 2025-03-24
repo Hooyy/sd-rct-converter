@@ -1,15 +1,12 @@
 class App {
     constructor() {
-        // Initialize theme management
         this.themeManager = new ThemeManager();
-        // Store selected items
         this.selectedItems = [];
         this.selectedRequiredDefeats = [];
         this.selectedBiomeTagBlacklist = [];
         this.selectedBiomeTagWhitelist = [];
-        // Initialize form handlers
+        this.selectedImage = null; // Armazena a textura selecionada
         this.initializeFormHandlers();
-
     }
 
     initializeFormHandlers() {
@@ -72,7 +69,6 @@ class App {
             this.toggleCustomInput(e.target.value, 'required-defeats-custom-container');
         });
 
-
         // Biome Tag Blacklist
         document.getElementById('biome-tag-blacklist-select')?.addEventListener('change', (e) => {
             this.toggleCustomInput(e.target.value, 'biome-tag-blacklist-custom-container');
@@ -92,6 +88,11 @@ class App {
         // Handler para o upload da imagem
         document.getElementById('trainer-image')?.addEventListener('change', (e) => {
             this.handleImageUpload(e.target.files[0]);
+        });
+
+        // Handler para remover imagem
+        document.getElementById('remove-image')?.addEventListener('click', () => {
+            this.removeImage();
         });
     }
 
@@ -164,6 +165,29 @@ class App {
         }
     }
 
+    handleImageUpload(file) {
+        if (file) {
+            this.selectedImage = file;
+            const imageNameSpan = document.getElementById('selected-image-name');
+            const removeButton = document.getElementById('remove-image');
+            if (imageNameSpan && removeButton) {
+                imageNameSpan.textContent = file.name;
+                removeButton.style.display = 'inline-block';
+            }
+        }
+    }
+
+    removeImage() {
+        this.selectedImage = null;
+        const imageNameSpan = document.getElementById('selected-image-name');
+        const removeButton = document.getElementById('remove-image');
+        const imageInput = document.getElementById('trainer-image');
+        if (imageNameSpan && removeButton && imageInput) {
+            imageNameSpan.textContent = 'Nenhuma textura selecionada';
+            removeButton.style.display = 'none';
+            imageInput.value = ''; // Limpa o input de arquivo
+        }
+    }
 
     // Função para adicionar o item
     addItem() {
@@ -207,7 +231,13 @@ class App {
         if (select && list) {
             const selectedValue = select.value === 'other' ? customInput.value.trim() : select.value;
 
-            // Check if the item already exists in the list
+            // Verifica se o valor é válido (não vazio ou nulo)
+            if (!selectedValue || selectedValue === '') {
+                console.warn('Tentativa de adicionar valor nulo ou vazio ignorada.');
+                return;
+            }
+
+            // Verifica se o item já existe na lista
             const itemIndex = selectedItems.findIndex(item => {
                 if (Array.isArray(item)) {
                     return item.includes(selectedValue);
@@ -217,26 +247,23 @@ class App {
             });
 
             if (itemIndex !== -1) {
-                // If the item exists, remove it
+                // Remove o item se já existir
                 selectedItems.splice(itemIndex, 1);
             } else {
-                // If the item doesn't exist, add it
+                // Adiciona o item se não existir
                 if (select.value === 'other') {
-                    // For custom inputs, split by comma and add as an array
                     const items = selectedValue.split(',').map(item => item.trim()).filter(item => item);
                     if (items.length > 0) {
                         selectedItems.push(items);
                     }
                 } else {
-                    // For dropdown selections, add as a single item
                     selectedItems.push([selectedValue]);
                 }
             }
 
-            // Update the list in the UI
             this.updateList(list, selectedItems);
 
-            // Clear the custom input if "other" was selected
+            // Limpa o input personalizado se "other" foi selecionado
             if (select.value === 'other') {
                 customInput.value = '';
             }
@@ -446,13 +473,6 @@ class App {
 
     // Função para obter a configuração do treinador
     getTrainerConfig() {
-        // Capture the selected items and their quantities
-        const selectedItems = this.selectedItems.map(item => ({
-            item: item.item,
-            quantity: item.quantity
-        }));
-
-        // Get references to the form inputs
         const trainerNameInput = document.getElementById('trainer-name');
         const maxSelectMarginInput = document.getElementById('max-select-margin');
         const moveBiasInput = document.getElementById('move-bias');
@@ -461,22 +481,22 @@ class App {
         const itemBiasInput = document.getElementById('item-bias');
         const battleFormatInput = document.getElementById('battle-format');
         const maxItemsInput = document.getElementById('max-items');
-        const itemQuantityInput = document.getElementById('item-quantity');
         const trainerIdentityInput = document.getElementById('trainer-identity');
 
-        // Return the trainer configuration object
         return {
             name: trainerNameInput ? trainerNameInput.value : '',
             identity: trainerIdentityInput ? trainerIdentityInput.value : '',
-            maxSelectMargin: maxSelectMarginInput ? parseFloat(maxSelectMarginInput.value) : '',
-            moveBias: moveBiasInput ? parseFloat(moveBiasInput.value) : '',
-            statMoveBias: statMoveBiasInput ? parseFloat(statMoveBiasInput.value) : '',
-            switchBias: switchBiasInput ? parseFloat(switchBiasInput.value) : '',
-            itemBias: itemBiasInput ? parseFloat(itemBiasInput.value) : '',
+            maxSelectMargin: maxSelectMarginInput ? parseFloat(maxSelectMarginInput.value) : 0.15,
+            moveBias: moveBiasInput ? parseFloat(moveBiasInput.value) : 1,
+            statMoveBias: statMoveBiasInput ? parseFloat(statMoveBiasInput.value) : 0.1,
+            switchBias: switchBiasInput ? parseFloat(switchBiasInput.value) : 0.65,
+            itemBias: itemBiasInput ? parseFloat(itemBiasInput.value) : 1,
             battleFormat: battleFormatInput ? battleFormatInput.value : '',
             maxItems: maxItemsInput ? parseInt(maxItemsInput.value) : '',
-            itemType: selectedItems,
-            itemQuantity: itemQuantityInput ? parseInt(itemQuantityInput.value) : 0
+            itemType: this.selectedItems.map(item => ({
+                item: item.item,
+                quantity: item.quantity
+            }))
         };
     }
 

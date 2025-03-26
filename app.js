@@ -59,6 +59,11 @@ class App {
         const initialSelection = document.getElementById('config-selector').value;
         this.toggleConfigSections(initialSelection);
 
+        // Nome da série
+        document.getElementById('series-select')?.addEventListener('change', (e) => {
+                this.toggleCustomInput(e.target.value, 'series-custom-container');
+            });
+
         // Required Defeats
         document.getElementById('add-required-defeat')?.addEventListener('click', () => {
             this.addItemToList('required-defeats-select', 'required-defeats-custom', 'required-defeats-list', this.selectedRequiredDefeats);
@@ -107,20 +112,29 @@ class App {
     toggleConfigSections(selectedValue) {
         const aiSettings = document.getElementById('ai-settings');
         const mainSettings = document.getElementById('main-settings');
-        const mobSettings = document.getElementById('mob-settings'); // Nova seção
+        const mobSettings = document.getElementById('mob-settings');
+        const seriesSettings = document.getElementById('series-settings'); // Nova seção
 
         if (selectedValue === 'ai') {
             aiSettings.style.display = 'block';
             mainSettings.style.display = 'none';
             mobSettings.style.display = 'none';
+            seriesSettings.style.display = 'none';
         } else if (selectedValue === 'main') {
             aiSettings.style.display = 'none';
             mainSettings.style.display = 'block';
             mobSettings.style.display = 'none';
+            seriesSettings.style.display = 'none';
         } else if (selectedValue === 'mob') {
             aiSettings.style.display = 'none';
             mainSettings.style.display = 'none';
             mobSettings.style.display = 'block';
+            seriesSettings.style.display = 'none';
+        } else if (selectedValue === 'series') {
+            aiSettings.style.display = 'none';
+            mainSettings.style.display = 'none';
+            mobSettings.style.display = 'none';
+            seriesSettings.style.display = 'block';
         }
     }
 
@@ -372,7 +386,6 @@ class App {
             const trainerConfig = this.getTrainerConfig();
             const mobConfig = this.getMobConfig();
 
-            // Check if the trainer name is filled
             if (!trainerConfig.name) {
                 throw new Error('Trainer name is required.');
             }
@@ -384,23 +397,31 @@ class App {
             const result = ShowdownConverter.convert(input, trainerConfig);
 
             if (result.success) {
-                const trainerName = trainerConfig.name.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+                // Obter o nome do treinador e convertê-lo para minúsculas
+                let trainerName = trainerConfig.name.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+
+                // Obter o tipo de treinador (Mob Type) e convertê-lo para minúsculas
+                const mobType = mobConfig.type ? mobConfig.type.toLowerCase() : 'normal';
+
+                // Adicionar o prefixo do tipo se não for "normal"
+                const fileNamePrefix = mobType !== 'normal' ? `${mobType}_` : '';
+                const fileName = `${fileNamePrefix}${trainerName}`;
 
                 const zip = new JSZip();
 
-                // Folder data/rctmod/trainers
+                // Arquivo na pasta trainers
                 const trainersFolder = zip.folder("data/rctmod/trainers");
-                trainersFolder.file(`${trainerName}.json`, result.result);
+                trainersFolder.file(`${fileName}.json`, result.result);
 
-                // Folder data/rctmod/mobs/single
+                // Arquivo na pasta mobs/single
                 const mobsFolder = zip.folder("data/rctmod/mobs");
                 const singleFolder = mobsFolder.folder("single");
-                singleFolder.file(`${trainerName}.json`, JSON.stringify(mobConfig, null, 2));
+                singleFolder.file(`${fileName}.json`, JSON.stringify(mobConfig, null, 2));
 
-                // Generate the ZIP file
+                // Gerar o ZIP com nome em minúsculas
                 zip.generateAsync({ type: "blob" })
                     .then((blob) => {
-                        saveAs(blob, `RCTrainer_${trainerName}.zip`);
+                        saveAs(blob, `${fileName}.zip`);
                     })
                     .catch((error) => {
                         console.error('Error generating ZIP:', error);
@@ -410,11 +431,19 @@ class App {
             }
         } catch (error) {
             console.error('Error generating JSON:', error.message);
-            alert(error.message); // Show an error message to the user
+            alert(error.message);
         }
     }
 
     getMobConfig() {
+        const seriesSelect = document.getElementById('series-select');
+        const seriesCustom = document.getElementById('series-custom');
+
+        // Determinar o valor do Series
+        const seriesValue = seriesSelect && seriesSelect.value === 'other'
+            ? (seriesCustom ? seriesCustom.value.trim() : '')
+            : (seriesSelect ? seriesSelect.value : '');
+
         return {
             type: document.getElementById('mob-type').value || undefined,
             requiredDefeats: this.selectedRequiredDefeats,
@@ -432,8 +461,8 @@ class App {
                 : undefined,
             biomeTagBlacklist: this.selectedBiomeTagBlacklist,
             biomeTagWhitelist: this.selectedBiomeTagWhitelist,
-            optional: document.getElementById('optional').value === 'true', // Add optional field
-            series: document.getElementById('series').value ? [document.getElementById('series').value] : undefined // Add series field
+            optional: document.getElementById('optional').value === 'true',
+            series: seriesValue || ''
         };
     }
 

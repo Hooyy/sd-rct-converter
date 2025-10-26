@@ -122,7 +122,7 @@ const ShowdownConverter = {
             }
 
             if (line.startsWith('Ability: ')) {
-                pokemon.ability = line.substring(9).trim().toLowerCase().replace(/ /g, '');
+                pokemon.ability = this.normalizeIdentifier(line.substring(9));
             } else if (line.startsWith('EVs: ')) {
                 this.parseEVs(line.substring(5), pokemon);
             } else if (line.startsWith('IVs: ')) {
@@ -133,7 +133,7 @@ const ShowdownConverter = {
                 pokemon.level = parseInt(line.substring(7).trim());
                 levelFound = true;
             } else if (line.startsWith('- ')) {
-                pokemon.moveset.push(line.substring(2).toLowerCase().replace(/ /g, ''));
+                pokemon.moveset.push(this.normalizeIdentifier(line.substring(2)));
             }
         });
 
@@ -206,5 +206,13 @@ const ShowdownConverter = {
                 case 'spe': pokemon.ivs.spe = numericValue; break;
             }
         });
+    },
+
+    normalizeIdentifier: function (value) {
+        return value
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
     }
 };

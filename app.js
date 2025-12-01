@@ -343,6 +343,26 @@ class App {
         this.updateSelectedItemList();
     }
 
+    parseNumberInput(inputId, parser) {
+        const input = document.getElementById(inputId);
+        if (!input) {
+            return undefined;
+        }
+
+        const rawValue = input.value;
+        if (rawValue === '' || rawValue === null) {
+            return undefined;
+        }
+
+        const normalizedValue = rawValue.trim();
+        if (!normalizedValue) {
+            return undefined;
+        }
+
+        const parsedValue = parser === parseFloat ? parser(normalizedValue) : parser(normalizedValue, 10);
+        return Number.isNaN(parsedValue) ? undefined : parsedValue;
+    }
+
     // Função para gerenciar a conversão de texto
     handleConversion() {
         try {
@@ -426,31 +446,35 @@ class App {
     getMobConfig() {
         const seriesSelect = document.getElementById('series-select');
         const seriesCustom = document.getElementById('series-custom');
+        const signatureItemInput = document.getElementById('signature-item');
+        const gimmickTagInput = document.getElementById('gimmick-tag');
 
         // Determinar o valor do Series
         const seriesValue = seriesSelect && seriesSelect.value === 'other'
             ? (seriesCustom ? seriesCustom.value.trim() : '')
             : (seriesSelect ? seriesSelect.value : '');
 
+        const series = seriesValue
+            .split(',')
+            .map(entry => entry.trim())
+            .filter(entry => entry);
+
+        const signatureItem = signatureItemInput ? signatureItemInput.value.trim() : '';
+        const gimmickTag = gimmickTagInput ? gimmickTagInput.value.trim() : '';
+
         return {
             type: document.getElementById('mob-type').value || undefined,
             requiredDefeats: this.selectedRequiredDefeats,
-            maxTrainerWins: document.getElementById('max-trainer-wins').value
-                ? parseInt(document.getElementById('max-trainer-wins').value)
-                : undefined,
-            maxTrainerDefeats: document.getElementById('max-trainer-defeats').value
-                ? parseInt(document.getElementById('max-trainer-defeats').value)
-                : undefined,
-            battleCooldownTicks: document.getElementById('battle-cooldown-ticks').value
-                ? parseInt(document.getElementById('battle-cooldown-ticks').value)
-                : undefined,
-            spawnWeightFactor: document.getElementById('spawn-weight-factor').value
-                ? parseFloat(document.getElementById('spawn-weight-factor').value)
-                : undefined,
+            signatureItem: signatureItem || undefined,
+            gimmickTag: gimmickTag || undefined,
+            maxTrainerWins: this.parseNumberInput('max-trainer-wins', parseInt),
+            maxTrainerDefeats: this.parseNumberInput('max-trainer-defeats', parseInt),
+            battleCooldownTicks: this.parseNumberInput('battle-cooldown-ticks', parseInt),
+            spawnWeightFactor: this.parseNumberInput('spawn-weight-factor', parseFloat),
             biomeTagBlacklist: this.selectedBiomeTagBlacklist,
             biomeTagWhitelist: this.selectedBiomeTagWhitelist,
             optional: document.getElementById('optional').value === 'true',
-            series: seriesValue || ''
+            series
         };
     }
 
@@ -477,7 +501,15 @@ class App {
             mobData.type = mobConfig.type;
         }
         if (mobConfig.series) {
-            mobData.series = mobConfig.series;
+            if (Array.isArray(mobConfig.series) && mobConfig.series.length > 0) {
+                mobData.series = [...mobConfig.series];
+            }
+        }
+        if (mobConfig.signatureItem) {
+            mobData.signatureItem = mobConfig.signatureItem;
+        }
+        if (mobConfig.gimmickTag) {
+            mobData.gimmickTag = mobConfig.gimmickTag;
         }
         if (mobConfig.maxTrainerWins !== undefined) {
             mobData.maxTrainerWins = mobConfig.maxTrainerWins;

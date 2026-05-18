@@ -284,6 +284,50 @@
             margin-top: 5px;
         }
 
+        .status-message {
+            margin: 15px auto 0;
+            max-width: 700px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            font-size: 0.95em;
+            display: none;
+        }
+
+        .status-message.info {
+            display: block;
+            background: rgba(76, 175, 80, 0.1);
+            border-color: #4CAF50;
+        }
+
+        .status-message.error {
+            display: block;
+            background: rgba(255, 107, 107, 0.1);
+            border-color: #ff6b6b;
+        }
+
+        .button-container button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .mode-helper-text {
+            margin-top: -8px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            width: 96px;
+            height: 96px;
+            border-radius: 6px;
+            border: 1px solid var(--textarea-border);
+            object-fit: cover;
+            display: none;
+        }
+
         .showdown-link,
         .rct-link {
             text-decoration: none;
@@ -332,6 +376,7 @@
                     <button id="remove-image" style="display: none; margin-left: 10px;"
                         class="item-button remove">Remover</button>
                 </div>
+                <img id="trainer-image-preview" class="image-preview" alt="Trainer skin preview">
             </div>
 
             <!-- Novo seletor para alternar entre AI Settings e Main Settings -->
@@ -343,6 +388,7 @@
                     <option value="mob">Mob Settings</option>
                     <option value="series">Series Config</option>
                 </select>
+                <div id="mode-helper-text" class="mode-helper-text"></div>
             </div>
 
             <!-- Seção AI Settings (visível apenas quando "AI Settings" é selecionado) -->
@@ -582,6 +628,7 @@
         <button id="convert-mob-button">Convert Mob Info</button>
         <button id="download-json-button">Download JSON</button>
     </div>
+    <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
 
 
     <div class="output-section">

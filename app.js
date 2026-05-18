@@ -159,8 +159,8 @@ class App {
         convertTrainerButton.disabled = !trainerMode;
         convertMobButton.disabled = trainerMode;
         helperText.textContent = trainerMode
-            ? 'Trainer/AI mode ativo: use "Convert Trainer Info".'
-            : 'Mob/Series mode ativo: use "Convert Mob Info".';
+            ? 'Trainer/AI mode active: use "Convert Trainer Info".'
+            : 'Mob/Series mode active: use "Convert Mob Info".';
     }
 
     addItemToList(selectId, customInputId, listId, selectedItems, options = {}) {
@@ -237,7 +237,8 @@ class App {
             return;
         }
 
-        if (!file.type.startsWith('image/')) {
+        const allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+        if (!allowedImageTypes.includes(file.type)) {
             this.setStatus('Please select a valid image file.', 'error');
             return;
         }
@@ -253,10 +254,7 @@ class App {
     }
 
     removeImage() {
-        if (this.imagePreviewUrl) {
-            URL.revokeObjectURL(this.imagePreviewUrl);
-            this.imagePreviewUrl = null;
-        }
+        this.cleanupImagePreview();
         this.selectedImage = null;
         const imageNameSpan = document.getElementById('selected-image-name');
         const removeButton = document.getElementById('remove-image');
@@ -278,12 +276,17 @@ class App {
         if (!imagePreview) {
             return;
         }
-        if (this.imagePreviewUrl) {
-            URL.revokeObjectURL(this.imagePreviewUrl);
-        }
+        this.cleanupImagePreview();
         this.imagePreviewUrl = URL.createObjectURL(file);
         imagePreview.src = this.imagePreviewUrl;
         imagePreview.style.display = 'block';
+    }
+
+    cleanupImagePreview() {
+        if (this.imagePreviewUrl) {
+            URL.revokeObjectURL(this.imagePreviewUrl);
+            this.imagePreviewUrl = null;
+        }
     }
 
     setStatus(message, type = 'info') {
@@ -306,7 +309,7 @@ class App {
             const customItemInput = document.getElementById('custom-item');
             customItem = customItemInput ? customItemInput.value.trim() : '';
             if (!customItem) {
-                alert('Please enter a custom item.');
+                this.setStatus('Please enter a custom item.', 'error');
                 return;
             }
         }
@@ -518,8 +521,7 @@ class App {
         if (dotIndex === -1) {
             return '.png';
         }
-        const extension = filename.substring(dotIndex).toLowerCase();
-        return extension || '.png';
+        return filename.substring(dotIndex).toLowerCase();
     }
 
     getMobConfig() {

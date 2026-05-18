@@ -6,7 +6,7 @@ class App {
         this.selectedBiomeTagBlacklist = [];
         this.selectedBiomeTagWhitelist = [];
         this.selectedImage = null; // Armazena a textura selecionada
-        this.imagePreviewUrl = null;
+        this.allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
         this.initializeFormHandlers();
     }
 
@@ -237,8 +237,7 @@ class App {
             return;
         }
 
-        const allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-        if (!allowedImageTypes.includes(file.type)) {
+        if (!this.allowedImageTypes.includes(file.type)) {
             this.setStatus('Please select a valid image file.', 'error');
             return;
         }
@@ -254,7 +253,6 @@ class App {
     }
 
     removeImage() {
-        this.cleanupImagePreview();
         this.selectedImage = null;
         const imageNameSpan = document.getElementById('selected-image-name');
         const removeButton = document.getElementById('remove-image');
@@ -276,17 +274,20 @@ class App {
         if (!imagePreview) {
             return;
         }
-        this.cleanupImagePreview();
-        this.imagePreviewUrl = URL.createObjectURL(file);
-        imagePreview.src = this.imagePreviewUrl;
-        imagePreview.style.display = 'block';
-    }
-
-    cleanupImagePreview() {
-        if (this.imagePreviewUrl) {
-            URL.revokeObjectURL(this.imagePreviewUrl);
-            this.imagePreviewUrl = null;
-        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+            if (!/^data:image\/(png|jpeg|webp|gif);base64,/i.test(dataUrl)) {
+                this.setStatus('Image preview failed validation.', 'error');
+                return;
+            }
+            imagePreview.src = dataUrl;
+            imagePreview.style.display = 'block';
+        };
+        reader.onerror = () => {
+            this.setStatus('Could not read selected image.', 'error');
+        };
+        reader.readAsDataURL(file);
     }
 
     setStatus(message, type = 'info') {
@@ -492,7 +493,7 @@ class App {
 
                 if (this.selectedImage) {
                     const texturesFolder = zip.folder("assets/rctmod/textures/trainers");
-                    const extension = this.getImageExtension(this.selectedImage.name);
+                    const extension = this.getImageExtension(this.selectedImage);
                     texturesFolder.file(`${fileName}${extension}`, this.selectedImage);
                 }
 
@@ -516,7 +517,19 @@ class App {
         }
     }
 
-    getImageExtension(filename = '') {
+    getImageExtension(file) {
+        const mimeToExtension = {
+            'image/png': '.png',
+            'image/jpeg': '.jpg',
+            'image/webp': '.webp',
+            'image/gif': '.gif'
+        };
+
+        if (file && mimeToExtension[file.type]) {
+            return mimeToExtension[file.type];
+        }
+
+        const filename = file && file.name ? file.name : '';
         const dotIndex = filename.lastIndexOf('.');
         if (dotIndex === -1) {
             return '.png';

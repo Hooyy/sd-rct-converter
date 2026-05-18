@@ -6,6 +6,7 @@ class App {
         this.selectedBiomeTagBlacklist = [];
         this.selectedBiomeTagWhitelist = [];
         this.selectedImage = null; // Armazena a textura selecionada
+        this.allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
         this.initializeFormHandlers();
     }
 
@@ -18,6 +19,7 @@ class App {
         // Config selector handler
         document.getElementById('config-selector')?.addEventListener('change', (e) => {
             this.toggleConfigSections(e.target.value);
+            this.updateActionButtons(e.target.value);
         });
 
         // Convert button handler
@@ -53,6 +55,7 @@ class App {
         // Garantir que a seção correta seja exibida ao carregar a página
         const initialSelection = document.getElementById('config-selector').value;
         this.toggleConfigSections(initialSelection);
+        this.updateActionButtons(initialSelection);
 
         const maxSelectMarginInput = document.getElementById('max-select-margin');
         if (maxSelectMarginInput) {
@@ -144,6 +147,22 @@ class App {
         }
     }
 
+    updateActionButtons(selectedValue) {
+        const convertTrainerButton = document.getElementById('convert-button');
+        const convertMobButton = document.getElementById('convert-mob-button');
+        const helperText = document.getElementById('mode-helper-text');
+        if (!convertTrainerButton || !convertMobButton || !helperText) {
+            return;
+        }
+
+        const trainerMode = selectedValue === 'main' || selectedValue === 'ai';
+        convertTrainerButton.disabled = !trainerMode;
+        convertMobButton.disabled = trainerMode;
+        helperText.textContent = trainerMode
+            ? 'Trainer/AI mode active: use "Convert Trainer Info".'
+            : 'Mob/Series mode active: use "Convert Mob Info".';
+    }
+
     addItemToList(selectId, customInputId, listId, selectedItems, options = {}) {
         const { allowGroups = false } = options;
         const select = document.getElementById(selectId);
@@ -214,14 +233,22 @@ class App {
     }
 
     handleImageUpload(file) {
-        if (file) {
-            this.selectedImage = file;
-            const imageNameSpan = document.getElementById('selected-image-name');
-            const removeButton = document.getElementById('remove-image');
-            if (imageNameSpan && removeButton) {
-                imageNameSpan.textContent = file.name;
-                removeButton.style.display = 'inline-block';
-            }
+        if (!file) {
+            return;
+        }
+
+        if (!this.allowedImageTypes.includes(file.type)) {
+            this.setStatus('Please select a valid image file.', 'error');
+            return;
+        }
+
+        this.selectedImage = file;
+        this.updateImagePreview(file);
+        const imageNameSpan = document.getElementById('selected-image-name');
+        const removeButton = document.getElementById('remove-image');
+        if (imageNameSpan && removeButton) {
+            imageNameSpan.textContent = file.name;
+            removeButton.style.display = 'inline-block';
         }
     }
 
@@ -230,11 +257,46 @@ class App {
         const imageNameSpan = document.getElementById('selected-image-name');
         const removeButton = document.getElementById('remove-image');
         const imageInput = document.getElementById('trainer-image');
+        const imagePreview = document.getElementById('trainer-image-preview');
         if (imageNameSpan && removeButton && imageInput) {
             imageNameSpan.textContent = 'Nenhuma textura selecionada';
             removeButton.style.display = 'none';
             imageInput.value = ''; // Limpa o input de arquivo
         }
+        if (imagePreview) {
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+        }
+    }
+
+    updateImagePreview(file) {
+        const imagePreview = document.getElementById('trainer-image-preview');
+        if (!imagePreview) {
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+            if (!/^data:image\/(png|jpeg|webp|gif);base64,/i.test(dataUrl)) {
+                this.setStatus('Image preview failed validation.', 'error');
+                return;
+            }
+            imagePreview.src = dataUrl;
+            imagePreview.style.display = 'block';
+        };
+        reader.onerror = () => {
+            this.setStatus('Could not read selected image.', 'error');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    setStatus(message, type = 'info') {
+        const status = document.getElementById('status-message');
+        if (!status) {
+            return;
+        }
+        status.className = `status-message ${type}`;
+        status.textContent = message;
     }
 
     // Função para adicionar o item
@@ -248,7 +310,7 @@ class App {
             const customItemInput = document.getElementById('custom-item');
             customItem = customItemInput ? customItemInput.value.trim() : '';
             if (!customItem) {
-                alert('Please enter a custom item.');
+                this.setStatus('Please enter a custom item.', 'error');
                 return;
             }
         }
@@ -377,11 +439,14 @@ class App {
 
             if (result.success) {
                 document.getElementById('output').textContent = result.result;
+                this.setStatus('Trainer conversion completed.', 'info');
             } else {
                 document.getElementById('output').textContent = 'Error: ' + result.error;
+                this.setStatus(result.error, 'error');
             }
         } catch (error) {
             document.getElementById('output').textContent = 'Error: ' + error.message;
+            this.setStatus(error.message, 'error');
         }
     }
 
@@ -426,21 +491,50 @@ class App {
                 const singleFolder = mobsFolder.folder("single");
                 singleFolder.file(`${fileName}.json`, JSON.stringify(mobData, null, 2));
 
+                if (this.selectedImage) {
+                    const texturesFolder = zip.folder("assets/rctmod/textures/trainers");
+                    const extension = this.getImageExtension(this.selectedImage);
+                    texturesFolder.file(`${fileName}${extension}`, this.selectedImage);
+                }
+
                 // Gerar o ZIP com nome em minúsculas
                 zip.generateAsync({ type: "blob" })
                     .then((blob) => {
                         saveAs(blob, `${fileName}.zip`);
+                        this.setStatus('ZIP generated successfully.', 'info');
                     })
                     .catch((error) => {
                         console.error('Error generating ZIP:', error);
+                        this.setStatus('Failed to generate ZIP.', 'error');
                     });
             } else {
                 console.error('Error in conversion:', result.error);
+                this.setStatus(result.error, 'error');
             }
         } catch (error) {
             console.error('Error generating JSON:', error.message);
-            alert(error.message);
+            this.setStatus(error.message, 'error');
         }
+    }
+
+    getImageExtension(file) {
+        const mimeToExtension = {
+            'image/png': '.png',
+            'image/jpeg': '.jpg',
+            'image/webp': '.webp',
+            'image/gif': '.gif'
+        };
+
+        if (file && mimeToExtension[file.type]) {
+            return mimeToExtension[file.type];
+        }
+
+        const filename = file && file.name ? file.name : '';
+        const dotIndex = filename.lastIndexOf('.');
+        if (dotIndex === -1) {
+            return '.png';
+        }
+        return filename.substring(dotIndex).toLowerCase();
     }
 
     getMobConfig() {
@@ -484,8 +578,10 @@ class App {
             const mobData = this.formatMobData(this.getMobConfig());
             const mobJson = JSON.stringify(mobData, null, 2);
             document.getElementById('output').textContent = mobJson;
+            this.setStatus('Mob conversion completed.', 'info');
         } catch (error) {
             document.getElementById('output').textContent = 'Error: ' + error.message;
+            this.setStatus(error.message, 'error');
         }
     }
 
